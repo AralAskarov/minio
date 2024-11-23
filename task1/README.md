@@ -154,3 +154,5 @@ mc ls node3/testbucket
 ### node failure demonstration
 
 [Screencast from 23.11.2024 21:38:07.webm](https://github.com/user-attachments/assets/80760806-c63e-4d33-ac9a-615deda999be)
+
+[Screencast from 23.11.2024 21:51:28.webm](https://github.com/user-attachments/assets/6f571170-5ed9-4979-b118-b1df35782c9b)
