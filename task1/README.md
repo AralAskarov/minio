@@ -1,4 +1,4 @@
-[Screencast from 23.11.2024 21:00:50.webm](https://github.com/user-attachments/assets/6ca79ecb-a368-43c0-870a-7a21af71363d)### Task #1. MinIO cluster
+### Task #1. MinIO cluster
 Set up a distributed cluster with 3 MinIO nodes, ensuring each node runs as a
 separate systemd unit service using docker container(-s).
 Verify that data is properly distributed and replicated across all nodes. Simulate
