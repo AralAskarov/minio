@@ -1,0 +1,20 @@
+{
+    "buckets": {
+      "create": [
+        {
+          "name": "new-bucket-1"
+        },
+        {
+          "name": "new-bucket-2"
+        }
+      ],
+      "delete": [
+        {
+          "name": "old-bucket-1"
+        },
+        {
+          "name": "temporary-data"
+        }
+      ]
+    }
+  }

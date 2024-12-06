@@ -1,0 +1,135 @@
+image: docker:20.10.16
+
+services:
+  - docker:dind
+
+stages:
+  - retrieve-secrets
+  - validate
+  - deploy
+  - notify
+
+variables:
+  MINIO_SERVER: "172.19.0.3:9000" 
+  VAULT_ADDR: "https://vault.medhelper.xyz:8200"
+
+
+retrieve-secrets:
+  stage: retrieve-secrets
+  image: alpine:3.16
+  script:
+    - apk add --no-cache curl jq
+    - >
+      curl --fail --silent --header "X-Vault-Token: $VAULT_TOKEN" "$VAULT_ADDR/v1/kv/secrets" 
+      | jq -r '.data.key' > private_key
+
+    - >
+      curl --fail --silent --header "X-Vault-Token: $VAULT_TOKEN" "$VAULT_ADDR/v1/kv/secrets" 
+      | jq -r '.data.login' > login_minio
+
+    - >
+      curl --fail --silent --header "X-Vault-Token: $VAULT_TOKEN" "$VAULT_ADDR/v1/kv/secrets" 
+      | jq -r '.data.password' > password_minio
+  artifacts:
+    paths:
+      - private_key
+      - login_minio
+      - password_minio
+    expire_in: 1h
+
+
+
+validate-buckets:
+  stage: validate
+  
+  script:
+    - apk add --no-cache python3 py3-pip
+    - python3 validateBucket.py
+
+  artifacts:
+    paths:
+      - kafka-topics-permissions.json
+
+  rules:
+    - changes:
+        - buckets.json  
+
+validate-users:
+  stage: validate
+  script:
+    - python validateUsers.py
+  rules:
+    - changes:
+        - users.json
+
+
+deploy:
+  stage: deploy
+  script:
+    - scp -i ~/.ssh/id_rsa kafka-topics-permissions.json $SSH_USER@$SSH_HOST:/tmp/kafka-topics-permissions.json
+    - |
+      ssh -i ~/.ssh/id_rsa $SSH_USER@$SSH_HOST "for TOPIC in \$(jq -c '.topics[]' /tmp/kafka-topics-permissions.json); do
+        ACTION=\$(echo \$TOPIC | jq -r '.action')
+        NAME=\$(echo \$TOPIC | jq -r '.name')
+        if [ \"\$ACTION\" == \"create\" ]; then
+          PARTITIONS=\$(echo \$TOPIC | jq -r '.partitions')
+          REPLICATION=\$(echo \$TOPIC | jq -r '.replication_factor')
+          DELETE_POLICY=\$(echo \$TOPIC | jq -r '.delete_policy')
+          /home/azureuser/kafka/bin/kafka-topics.sh --create --topic \$NAME --partitions \$PARTITIONS --replication-factor \$REPLICATION --config cleanup.policy=\$DELETE_POLICY --bootstrap-server localhost:9092 --command-config /home/azureuser/kafka/ssl/clients/admin/admin_client.properties
+        elif [ \"\$ACTION\" == \"delete\" ]; then
+          /home/azureuser/kafka/bin/kafka-topics.sh --delete --topic \$NAME --bootstrap-server localhost:9092 --command-config /home/azureuser/kafka/ssl/clients/admin/admin_client.properties
+        else
+          echo \"Unknown action: \$ACTION for topic \$NAME\"
+        fi
+      done"
+    
+    
+    - |
+      ssh -i ~/.ssh/id_rsa $SSH_USER@$SSH_HOST "for PERMISSION in \$(jq -c '.permissions[]' /tmp/kafka-topics-permissions.json); do \
+          TOPIC=\$(echo \$PERMISSION | jq -r '.topic'); \
+          USER=\$(echo \$PERMISSION | jq -r '.user'); \
+          for ACCESS in \$(echo \$PERMISSION | jq -r '.access[]'); do \
+            if [ \"\$ACCESS\" == \"read\" ]; then \
+              /home/azureuser/kafka/bin/kafka-acls.sh --add --allow-principal User:\$USER --operation Read --topic \$TOPIC --bootstrap-server localhost:9092 --command-config /home/azureuser/kafka/ssl/clients/admin/admin_client.properties; \
+            elif [ \"\$ACCESS\" == \"write\" ]; then \
+              /home/azureuser/kafka/bin/kafka-acls.sh --add --allow-principal User:\$USER --operation Write --topic \$TOPIC --bootstrap-server localhost:9092 --command-config /home/azureuser/kafka/ssl/clients/admin/admin_client.properties; \
+            else \
+              echo \"Unknown access type: \$ACCESS for user \$USER on topic \$TOPIC\"; \
+            fi; \
+          done; \
+        done"
+    
+
+  dependencies:
+    - validate
+  only:
+    refs:
+      - master
+
+
+
+deploy-buckets:
+  stage: deploy
+  script:
+    - echo "Deploying bucket configuration..."
+    - python deploy_buckets.py
+  rules:
+    - changes:
+        - buckets_config.json  # Запускается только при изменении файла
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_PIPELINE_SOURCE == "push"
+  needs:
+    - validate-buckets  # Выполняется только после успешной валидации
+  when: manual          # Требует ручного подтверждения
+
+deploy-users:
+  stage: deploy
+  script:
+    - echo "Deploying users configuration..."
+    - python deploy_users.py
+  rules:
+    - changes:
+        - users_config.json  # Запускается только при изменении файла
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_PIPELINE_SOURCE == "push"
+  needs:
+    - validate-users  # Выполняется только после успешной валидации
+  when: manual        # Требует ручного подтверждения
