@@ -300,3 +300,65 @@ mc alias set local http://172.19.0.3:9000 aral123 pass123123
 
 
 ## [Script for sync](syns_minio_rclone.sh)
+
+Usage Script
+```bash
+chmod +x syns_minio_rclone.sh
+./syns_minio_rclone.sh BUCKET_NAME
+```
+
+Create cron
+```bash
+crontab -e
+```
+write at the end command like
+```bash
+* * * * * /home/aral/gitREPOS/minio/task2/syns_minio_rclone.sh test
+```
+to run script every minute
+
+Then check logs
+```bash
+aral@aral-ROG-Strix-G513RM-G513RM:~/minio-backup/logs$ cat minio-test-sync.log 
+2024/12/06 10:10:01 INFO  : There was nothing to transfer
+2024/12/06 10:10:01 INFO  : 
+Transferred:   	          0 B / 0 B, -, 0 B/s, ETA -
+Checks:                 2 / 2, 100%
+Elapsed time:         0.0s
+
+2024/12/06 10:11:01 INFO  : There was nothing to transfer
+2024/12/06 10:11:01 INFO  : 
+Transferred:   	          0 B / 0 B, -, 0 B/s, ETA -
+Checks:                 2 / 2, 100%
+Elapsed time:         0.0s
+
+2024/12/06 10:12:01 INFO  : There was nothing to transfer
+2024/12/06 10:12:01 INFO  : 
+Transferred:   	          0 B / 0 B, -, 0 B/s, ETA -
+Checks:                 2 / 2, 100%
+Elapsed time:         0.0s
+
+2024/12/06 10:13:01 INFO  : There was nothing to transfer
+2024/12/06 10:13:01 INFO  : 
+Transferred:   	          0 B / 0 B, -, 0 B/s, ETA -
+Checks:                 2 / 2, 100%
+Elapsed time:         0.0s
+
+2024/12/06 10:14:01 INFO  : There was nothing to transfer
+2024/12/06 10:14:01 INFO  : 
+Transferred:   	          0 B / 0 B, -, 0 B/s, ETA -
+Checks:                 2 / 2, 100%
+Elapsed time:         0.0s
+
+2024/12/06 10:14:09 INFO  : There was nothing to transfer
+2024/12/06 10:14:09 INFO  : 
+Transferred:   	          0 B / 0 B, -, 0 B/s, ETA -
+Checks:                 2 / 2, 100%
+Elapsed time:         0.0s
+
+2024/12/06 10:15:01 INFO  : There was nothing to transfer
+2024/12/06 10:15:01 INFO  : 
+Transferred:   	          0 B / 0 B, -, 0 B/s, ETA -
+Checks:                 2 / 2, 100%
+Elapsed time:         0.0s
+```
