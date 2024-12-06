@@ -2,24 +2,24 @@
   "users": {
     "create": [
       {
-        "username": "user1",
+        "username": "user4",
         "password": "password123",
         "policies": ["readwrite"]
       },
       {
-        "username": "user2",
+        "username": "user5",
         "password": "securepassword456",
         "policies": ["readonly"]
       },
       {
-        "username": "user3",
+        "username": "user6",
         "password": "writeonlypassword",
         "policies": ["writeonly"]
       }
     ],
     "delete": [
-      "olduser1",
-      "olduser2"
+      "user3",
+      "user2"
     ]
   }
 }

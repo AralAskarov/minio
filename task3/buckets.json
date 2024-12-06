@@ -2,19 +2,20 @@
     "buckets": {
       "create": [
         {
-          "name": "new-bucket-1"
+          "name": "new-bucket-4"
         },
         {
-          "name": "new-bucket-2"
+          "name": "new-bucket-5"
         }
       ],
       "delete": [
         {
-          "name": "old-bucket-1"
+          "name": "new-bucket-2"
         },
         {
-          "name": "temporary-data"
+          "name": "new-bucket-3"
         }
       ]
     }
   }
+  
