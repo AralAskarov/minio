@@ -299,4 +299,4 @@ then do this
 mc alias set local http://172.19.0.3:9000 aral123 pass123123
 
 
-## [Script for sync](task2/syns_minio_rclone.sh)
+## [Script for sync](/syns_minio_rclone.sh)
