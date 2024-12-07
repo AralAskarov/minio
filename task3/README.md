@@ -6,3 +6,13 @@ https://gitlab.com/mastering-ci-cd/miniotask3
 https://gitlab.com/mastering-ci-cd/miniotask3
 
 https://gitlab.com/mastering-ci-cd/miniotask3
+
+
+connect to server
+```bash
+mc alias set myminio http://your-minio-server:9000 ACCESS_KEY SECRET_KEY
+```
+check list users with acl
+```bash
+mc admin user list myminio
+```
