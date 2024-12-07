@@ -12,6 +12,7 @@ stages:
   
 
 variables:
+  GIT_DEPTH: 0
   MINIO_SERVER: "http://172.19.0.3:9000"
   VAULT_ADDR: "https://vault.medhelper.xyz:8200"
   STATUS_FILE: "status.json"
@@ -69,6 +70,10 @@ validate-buckets:
         - buckets.json  
   artifacts:
     paths:
+      - login_minio
+      - password_minio
+      - telegram_token_minio
+      - telegramchannelid_minio
       - $STATUS_FILE
 
 validate-users:
@@ -87,6 +92,10 @@ validate-users:
         - users.json
   artifacts:
     paths:
+      - login_minio
+      - password_minio
+      - telegram_token_minio
+      - telegramchannelid_minio
       - $STATUS_FILE
 
 deploy-buckets:
@@ -94,7 +103,6 @@ deploy-buckets:
   tags:
     - local  
   script:
-    - sudo apt-get install -y curl jq
     - |
       jq '. + {"deploy-buckets": "failed"}' $STATUS_FILE > tmp && mv tmp $STATUS_FILE
     - mc alias set local $MINIO_SERVER $(cat login_minio) $(cat password_minio)
@@ -121,6 +129,10 @@ deploy-buckets:
   artifacts:
     paths:
       - buckets.json
+      - login_minio
+      - password_minio
+      - telegram_token_minio
+      - telegramchannelid_minio
       - $STATUS_FILE
 
 rollback-buckets:
@@ -128,7 +140,6 @@ rollback-buckets:
   tags:
     - local  
   script:
-    - sudo apt-get install -y curl jq
     - |
       jq '. + {"rollback-buckets": "failed"}' $STATUS_FILE > tmp && mv tmp $STATUS_FILE
     - mc alias set local $MINIO_SERVER $(cat login_minio) $(cat password_minio)
@@ -148,7 +159,6 @@ deploy-users:
   tags:
     - local  
   script:
-    - sudo apt-get install -y curl jq
     - |
       jq '. + {"deploy-users": "failed"}' $STATUS_FILE > tmp && mv tmp $STATUS_FILE
     - mc alias set local $MINIO_SERVER $(cat login_minio) $(cat password_minio)
@@ -183,6 +193,10 @@ deploy-users:
   artifacts:
     paths:
       - users.json
+      - login_minio
+      - password_minio
+      - telegram_token_minio
+      - telegramchannelid_minio
       - $STATUS_FILE
 
 rollback-users:
@@ -190,7 +204,6 @@ rollback-users:
   tags:
     - local  
   script:
-    - sudo apt-get install -y curl jq
     - |
       jq '. + {"rollback-users": "failed"}' $STATUS_FILE > tmp && mv tmp $STATUS_FILE
     - mc alias set local $MINIO_SERVER $(cat login_minio) $(cat password_minio)
@@ -219,7 +232,11 @@ notify_summary:
       $SUMMARY
       Pipeline: $CI_PIPELINE_URL" \
       -d parse_mode="Markdown"
-  when: always
+  when: manual 
   artifacts:
     paths:
+      - login_minio
+      - password_minio
+      - telegram_token_minio
+      - telegramchannelid_minio
       - $STATUS_FILE
